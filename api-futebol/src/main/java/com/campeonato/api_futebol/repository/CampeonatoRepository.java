@@ -10,4 +10,7 @@ import org.springframework.stereotype.Repository;
 public interface CampeonatoRepository extends JpaRepository<Campeonato, Long> {
     // Consulta personalizada: Buscar campeonatos por ano
     Page<Campeonato> findByAno(Integer ano, Pageable pageable);
+
+    // Consulta personalizada: buscar campeonatos pelo nome
+    Page<Campeonato> findByNomeContainingIgnoreCase(String nome, Pageable pageable);
 }

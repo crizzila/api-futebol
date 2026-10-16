@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>API Campeonato de Futebol - Documentação</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>">
+    <!-- CSS padrão do Swagger UI (servido pelo springdoc) -->
+    <link rel="stylesheet" href="/swagger-ui/swagger-ui.css">
+    <!-- NOSSO CSS customizado: carregado depois, então sobrescreve o padrão -->
+    <link rel="stylesheet" href="/swagger-custom.css">
+</head>
+<body>
+    <header class="hero">
+        <div class="hero-bola">⚽</div>
+        <div>
+            <h1>API Campeonato de Futebol</h1>
+            <p>Times, jogadores, campeonatos e partidas &middot; REST nível 3 (HATEOAS)</p>
+        </div>
+    </header>
+
+    <div id="swagger-ui"></div>
+
+    <script src="/swagger-ui/swagger-ui-bundle.js"></script>
+    <script src="/swagger-ui/swagger-ui-standalone-preset.js"></script>
+    <script>
+        window.onload = function () {
+            window.ui = SwaggerUIBundle({
+                url: "/v3/api-docs",
+                dom_id: "#swagger-ui",
+                deepLinking: true,
+                docExpansion: "none",
+                filter: true,
+                displayRequestDuration: true,
+                defaultModelsExpandDepth: 0,
+                presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+                layout: "BaseLayout",
+                // Proteção extra: o Swagger envia "sort=string" por padrão. Aqui removemos esse valor falso.
+                requestInterceptor: function (req) {
+                    try {
+                        var url = new URL(req.url);
+                        var valores = url.searchParams.getAll("sort").filter(function (v) { return v !== "string"; });
+                        url.searchParams.delete("sort");
+                        valores.forEach(function (v) { url.searchParams.append("sort", v); });
+                        req.url = url.toString();
+                    } catch (e) { /* ignora */ }
+                    return req;
+                }
+            });
+        };
+    </script>
+</body>
+</html>

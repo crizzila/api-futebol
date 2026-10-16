@@ -11,4 +11,9 @@ import org.springframework.stereotype.Repository;
 public interface PartidaRepository extends JpaRepository<Partida, Long> {
     // Consulta personalizada: Buscar partidas pelo status (Agendada, Finalizada, etc.)
     Page<Partida> findByStatus(StatusPartida status, Pageable pageable);
+
+    // Usadas para impedir a exclusão de times/campeonatos que já têm partidas
+    boolean existsByMandanteIdOrVisitanteId(Long mandanteId, Long visitanteId);
+
+    boolean existsByCampeonatoId(Long campeonatoId);
 }

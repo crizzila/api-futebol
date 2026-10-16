@@ -11,4 +11,10 @@ import org.springframework.stereotype.Repository;
 public interface JogadorRepository extends JpaRepository<Jogador, Long> {
     // Consulta personalizada: Buscar jogadores por uma posição específica
     Page<Jogador> findByPosicao(PosicaoJogador posicao, Pageable pageable);
+
+    // Consulta personalizada: buscar jogadores pelo nome (contém, sem diferenciar maiúsculas)
+    Page<Jogador> findByNomeContainingIgnoreCase(String nome, Pageable pageable);
+
+    // Jogadores de um time (navega pelo relacionamento: time.id)
+    Page<Jogador> findByTimeId(Long timeId, Pageable pageable);
 }

@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tb_partida")
+@Schema(description = "Partida: entidade associativa entre dois times (mandante e visitante) dentro de um campeonato")
 public class Partida {
 
     @Id
@@ -32,16 +33,22 @@ public class Partida {
     private Integer placarVisitante = 0;
 
     // OS RELACIONAMENTOS N:1
+    @NotNull(message = "O time mandante é obrigatório.")
     @ManyToOne
     @JoinColumn(name = "mandante_id")
+    @Schema(description = "Time que joga em casa. Basta informar o id: { \"id\": 1 }", requiredMode = Schema.RequiredMode.REQUIRED)
     private Time mandante;
 
+    @NotNull(message = "O time visitante é obrigatório.")
     @ManyToOne
     @JoinColumn(name = "visitante_id")
+    @Schema(description = "Time visitante. Basta informar o id: { \"id\": 2 }", requiredMode = Schema.RequiredMode.REQUIRED)
     private Time visitante;
 
+    @NotNull(message = "O campeonato é obrigatório.")
     @ManyToOne
     @JoinColumn(name = "campeonato_id")
+    @Schema(description = "Campeonato da partida. Basta informar o id: { \"id\": 1 }", requiredMode = Schema.RequiredMode.REQUIRED)
     private Campeonato campeonato;
 
     public Partida() {

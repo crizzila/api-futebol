@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "tb_jogador")
+@Schema(description = "Jogador de futebol vinculado a um time")
 public class Jogador {
 
     @Id
@@ -27,8 +28,10 @@ public class Jogador {
 
     // O RELACIONAMENTO N:1
     // Vários jogadores pertencem a um time
+    @NotNull(message = "O time do jogador é obrigatório. Informe: \"time\": { \"id\": 1 }")
     @ManyToOne
     @JoinColumn(name = "time_id")
+    @Schema(description = "Time do jogador. Basta informar o id: { \"id\": 1 }", requiredMode = Schema.RequiredMode.REQUIRED)
     private Time time;
 
     public Jogador() {

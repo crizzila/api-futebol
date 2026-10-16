@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "tb_estadio")
+@Schema(description = "Estádio sede de um time")
 public class Estadio {
 
     @Id
@@ -27,7 +28,7 @@ public class Estadio {
     @Schema(description = "Capacidade total de público", example = "78000", minimum = "1000", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer capacidade;
 
-    //  O RELACIONAMENTO 1:1
+    // 1:1 - lado inverso (mappedBy): quem guarda a chave estrangeira é o Time
     @OneToOne(mappedBy = "estadio")
     @JsonIgnore
     private Time time;

@@ -6,10 +6,12 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "tb_campeonato")
+@Schema(description = "Campeonato de futebol disputado por vários times")
 public class Campeonato {
 
     @Id
@@ -35,7 +37,8 @@ public class Campeonato {
             joinColumns = @JoinColumn(name = "campeonato_id"),
             inverseJoinColumns = @JoinColumn(name = "time_id")
     )
-    private List<Time> times;
+    @Schema(description = "Times participantes. Na criação informe só os ids: [{ \"id\": 1 }, { \"id\": 2 }]")
+    private List<Time> times = new ArrayList<>();
 
     public Campeonato() {
     }

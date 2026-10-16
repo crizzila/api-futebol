@@ -10,4 +10,7 @@ import org.springframework.stereotype.Repository;
 public interface EstadioRepository extends JpaRepository<Estadio, Long> {
     // Consulta personalizada: Buscar estádios com capacidade maior ou igual a X
     Page<Estadio> findByCapacidadeGreaterThanEqual(Integer capacidade, Pageable pageable);
+
+    // Consulta personalizada: buscar estádios pelo nome
+    Page<Estadio> findByNomeContainingIgnoreCase(String nome, Pageable pageable);
 }

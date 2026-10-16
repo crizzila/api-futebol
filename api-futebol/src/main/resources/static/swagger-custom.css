@@ -1,0 +1,83 @@
+/* ===== Tema "Gramado" para o Swagger UI ===== */
+:root {
+    --verde-escuro: #064e2b;
+    --verde: #0b7a3e;
+    --verde-claro: #e8f5ec;
+    --amarelo: #f5c518;
+    --cinza: #2b2f33;
+}
+
+body {
+    margin: 0;
+    background: #f3f7f4;
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Cabeçalho (hero) */
+.hero {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 28px 40px;
+    color: #fff;
+    background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,.06) 0 60px, rgba(255,255,255,0) 60px 120px),
+        linear-gradient(135deg, var(--verde-escuro), var(--verde));
+    border-bottom: 6px solid var(--amarelo);
+}
+.hero-bola { font-size: 56px; line-height: 1; }
+.hero h1 { margin: 0; font-size: 32px; letter-spacing: .5px; }
+.hero p { margin: 6px 0 0; opacity: .9; font-size: 15px; }
+
+/* Bloco de informações (título e descrição da API) */
+.swagger-ui .info { margin: 30px 0 10px; }
+.swagger-ui .info .title { color: var(--verde-escuro); font-weight: 800; }
+.swagger-ui .info .title small.version-stamp {
+    background: var(--amarelo);
+    color: var(--cinza);
+}
+.swagger-ui .info h2, .swagger-ui .info h3 { color: var(--verde); }
+.swagger-ui .info table { border-collapse: collapse; }
+.swagger-ui .info table th { background: var(--verde); color: #fff; padding: 6px 10px; }
+.swagger-ui .info table td { padding: 6px 10px; border: 1px solid #d5e5da; }
+.swagger-ui .info code { background: var(--verde-claro); color: var(--verde-escuro); padding: 1px 5px; border-radius: 4px; }
+
+/* Título de cada grupo (tag) */
+.swagger-ui .opblock-tag {
+    color: var(--verde-escuro);
+    border-bottom: 2px solid var(--verde);
+    font-weight: 700;
+}
+.swagger-ui .opblock-tag:hover { background: var(--verde-claro); }
+
+/* Cores dos métodos HTTP */
+.swagger-ui .opblock.opblock-get    { background: rgba(11,122,62,.06);  border-color: #0b7a3e; }
+.swagger-ui .opblock.opblock-get .opblock-summary-method    { background: #0b7a3e; }
+.swagger-ui .opblock.opblock-post   { background: rgba(31,119,180,.06); border-color: #1f77b4; }
+.swagger-ui .opblock.opblock-post .opblock-summary-method   { background: #1f77b4; }
+.swagger-ui .opblock.opblock-put    { background: rgba(245,197,24,.12); border-color: #d9a900; }
+.swagger-ui .opblock.opblock-put .opblock-summary-method    { background: #d9a900; color: #222; }
+.swagger-ui .opblock.opblock-delete { background: rgba(200,40,40,.06);  border-color: #c82828; }
+.swagger-ui .opblock.opblock-delete .opblock-summary-method { background: #c82828; }
+
+.swagger-ui .opblock { border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.swagger-ui .opblock .opblock-summary-method { border-radius: 4px; min-width: 80px; font-weight: 700; }
+
+/* Botões */
+.swagger-ui .btn.execute {
+    background: var(--verde);
+    border-color: var(--verde);
+    color: #fff;
+}
+.swagger-ui .btn.execute:hover { background: var(--verde-escuro); }
+.swagger-ui .btn.authorize { color: var(--verde); border-color: var(--verde); }
+
+/* Campo de filtro */
+.swagger-ui .filter-container .operation-filter-input { border: 2px solid var(--verde); border-radius: 6px; }
+
+/* Tabelas de parametros e respostas */
+.swagger-ui table thead tr th { color: var(--verde-escuro); }
+.swagger-ui .response-col_status { font-weight: 700; color: var(--verde-escuro); }
+
+/* Wrapper centralizado */
+.swagger-ui .wrapper { max-width: 1200px; }

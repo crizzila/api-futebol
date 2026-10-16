@@ -1,0 +1,1643 @@
+{
+  "info": {
+    "_postman_id": "b19b749c-f4a2-49a0-a59b-8866b6de29de",
+    "name": "API Campeonato de Futebol - Parte 1",
+    "description": "Execute as pastas NA ORDEM (1 a 5, depois a limpeza). Os ids criados são guardados em variáveis da coleção automaticamente.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1 - Times",
+      "item": [
+        {
+          "name": "POST criar Palmeiras",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/times",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "times"
+              ]
+            },
+            "description": "Cria o time e o estádio em cascata (1:1). Esperado: 201 + Location.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Palmeiras\",\n  \"sigla\": \"PAL\",\n  \"dataFundacao\": \"1914-08-26\",\n  \"estadio\": {\n    \"nome\": \"Allianz Parque\",\n    \"capacidade\": 43713\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.id) pm.collectionVariables.set('timeId1', j.id);",
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST criar Corinthians",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/times",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "times"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Corinthians\",\n  \"sigla\": \"COR\",\n  \"dataFundacao\": \"1910-09-01\",\n  \"estadio\": {\n    \"nome\": \"Neo Química Arena\",\n    \"capacidade\": 49205\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.id) pm.collectionVariables.set('timeId2', j.id);",
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET listar (paginado)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/times?page=0&size=10&sort=id,asc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "times"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "sort",
+                  "value": "id,asc"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET por id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/times/{{timeId1}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "times",
+                "{{timeId1}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET buscar por nome",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/times/buscar-por-nome?nome=palm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "times",
+                "buscar-por-nome"
+              ],
+              "query": [
+                {
+                  "key": "nome",
+                  "value": "palm"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT atualizar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/times/{{timeId1}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "times",
+                "{{timeId1}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Sociedade Esportiva Palmeiras\",\n  \"sigla\": \"PAL\",\n  \"dataFundacao\": \"1914-08-26\",\n  \"estadio\": {\n    \"nome\": \"Allianz Parque\",\n    \"capacidade\": 43713\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET jogadores do time",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/times/{{timeId1}}/jogadores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "times",
+                "{{timeId1}}",
+                "jogadores"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST inválido (sigla errada) -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/times",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "times"
+              ]
+            },
+            "description": "Testa Bean Validation e o formato de erro.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Palmeiras\",\n  \"sigla\": \"pa1\",\n  \"dataFundacao\": \"1914-08-26\",\n  \"estadio\": {\n    \"nome\": \"Allianz Parque\",\n    \"capacidade\": 43713\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET sort inválido -> 400",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/times?sort=string",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "times"
+              ],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "string"
+                }
+              ]
+            },
+            "description": "Antes dava 500; agora o handler global devolve 400."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET inexistente -> 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/times/9999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "times",
+                "9999"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2 - Estádios",
+      "item": [
+        {
+          "name": "POST criar estádio avulso",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadios"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Maracanã\",\n  \"capacidade\": 78000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.id) pm.collectionVariables.set('estadioId', j.id);",
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/estadios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadios"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET por id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/estadios/{{estadioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadios",
+                "{{estadioId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET buscar por capacidade",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/estadios/buscar-por-capacidade?capacidadeMinima=40000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadios",
+                "buscar-por-capacidade"
+              ],
+              "query": [
+                {
+                  "key": "capacidadeMinima",
+                  "value": "40000"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET buscar por nome",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/estadios/buscar-por-nome?nome=maracan",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadios",
+                "buscar-por-nome"
+              ],
+              "query": [
+                {
+                  "key": "nome",
+                  "value": "maracan"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT atualizar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadios/{{estadioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadios",
+                "{{estadioId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Maracanã\",\n  \"capacidade\": 78838\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT vincular estádio ao time 2 (1:1)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/times/{{timeId2}}/estadio/{{estadioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "times",
+                "{{timeId2}}",
+                "estadio",
+                "{{estadioId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE estádio de um time -> 409",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/estadios/{{estadioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadios",
+                "{{estadioId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3 - Jogadores",
+      "item": [
+        {
+          "name": "POST criar jogador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/jogadores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "jogadores"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Raphael Veiga\",\n  \"posicao\": \"MEIA\",\n  \"time\": {\n    \"id\": \"{{timeId1}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.id) pm.collectionVariables.set('jogadorId', j.id);",
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/jogadores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "jogadores"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET por id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/jogadores/{{jogadorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "jogadores",
+                "{{jogadorId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET buscar por posição",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/jogadores/buscar-por-posicao?posicao=MEIA",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "jogadores",
+                "buscar-por-posicao"
+              ],
+              "query": [
+                {
+                  "key": "posicao",
+                  "value": "MEIA"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET buscar por nome",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/jogadores/buscar-por-nome?nome=veiga",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "jogadores",
+                "buscar-por-nome"
+              ],
+              "query": [
+                {
+                  "key": "nome",
+                  "value": "veiga"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT atualizar (transferência de time)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/jogadores/{{jogadorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "jogadores",
+                "{{jogadorId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Raphael Veiga\",\n  \"posicao\": \"MEIA\",\n  \"time\": {\n    \"id\": \"{{timeId2}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST sem time -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/jogadores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "jogadores"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Sem Time\",\n  \"posicao\": \"GOLEIRO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/jogadores/{{jogadorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "jogadores",
+                "{{jogadorId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4 - Campeonatos",
+      "item": [
+        {
+          "name": "POST criar campeonato",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/campeonatos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campeonatos"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Campeonato Paulista\",\n  \"ano\": 2026,\n  \"times\": [\n    {\n      \"id\": \"{{timeId1}}\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.id) pm.collectionVariables.set('campeonatoId', j.id);",
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST adicionar time (N:N)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campeonatos/{{campeonatoId}}/times/{{timeId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campeonatos",
+                "{{campeonatoId}}",
+                "times",
+                "{{timeId2}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campeonatos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campeonatos"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET por id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campeonatos/{{campeonatoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campeonatos",
+                "{{campeonatoId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET buscar por ano",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campeonatos/buscar-por-ano?ano=2026",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campeonatos",
+                "buscar-por-ano"
+              ],
+              "query": [
+                {
+                  "key": "ano",
+                  "value": "2026"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET buscar por nome",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campeonatos/buscar-por-nome?nome=paulista",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campeonatos",
+                "buscar-por-nome"
+              ],
+              "query": [
+                {
+                  "key": "nome",
+                  "value": "paulista"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT atualizar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/campeonatos/{{campeonatoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campeonatos",
+                "{{campeonatoId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Campeonato Paulista\",\n  \"ano\": 2026\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST adicionar time repetido -> 409",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campeonatos/{{campeonatoId}}/times/{{timeId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campeonatos",
+                "{{campeonatoId}}",
+                "times",
+                "{{timeId2}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5 - Partidas",
+      "item": [
+        {
+          "name": "POST criar partida",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/partidas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "partidas"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataHora\": \"2026-10-20T21:30:00\",\n  \"status\": \"AGENDADA\",\n  \"placarMandante\": 0,\n  \"placarVisitante\": 0,\n  \"mandante\": {\n    \"id\": \"{{timeId1}}\"\n  },\n  \"visitante\": {\n    \"id\": \"{{timeId2}}\"\n  },\n  \"campeonato\": {\n    \"id\": \"{{campeonatoId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.id) pm.collectionVariables.set('partidaId', j.id);",
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.within(200, 299));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/partidas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "partidas"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET por id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/partidas/{{partidaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "partidas",
+                "{{partidaId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET buscar por status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/partidas/buscar-por-status?status=AGENDADA",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "partidas",
+                "buscar-por-status"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "AGENDADA"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT registrar resultado",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/partidas/{{partidaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "partidas",
+                "{{partidaId}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataHora\": \"2026-10-20T21:30:00\",\n  \"status\": \"FINALIZADA\",\n  \"placarMandante\": 2,\n  \"placarVisitante\": 1,\n  \"mandante\": {\n    \"id\": \"{{timeId1}}\"\n  },\n  \"visitante\": {\n    \"id\": \"{{timeId2}}\"\n  },\n  \"campeonato\": {\n    \"id\": \"{{campeonatoId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST times iguais -> 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/partidas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "partidas"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataHora\": \"2026-10-21T21:30:00\",\n  \"mandante\": {\n    \"id\": \"{{timeId1}}\"\n  },\n  \"visitante\": {\n    \"id\": \"{{timeId1}}\"\n  },\n  \"campeonato\": {\n    \"id\": \"{{campeonatoId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE time com partida -> 409",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/times/{{timeId1}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "times",
+                "{{timeId1}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE partida",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/partidas/{{partidaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "partidas",
+                "{{partidaId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6 - Limpeza",
+      "item": [
+        {
+          "name": "DELETE campeonato",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/campeonatos/{{campeonatoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "campeonatos",
+                "{{campeonatoId}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE time 1",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/times/{{timeId1}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "times",
+                "{{timeId1}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE time 2",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/times/{{timeId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "times",
+                "{{timeId2}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "timeId1",
+      "value": ""
+    },
+    {
+      "key": "timeId2",
+      "value": ""
+    },
+    {
+      "key": "estadioId",
+      "value": ""
+    },
+    {
+      "key": "jogadorId",
+      "value": ""
+    },
+    {
+      "key": "campeonatoId",
+      "value": ""
+    },
+    {
+      "key": "partidaId",
+      "value": ""
+    }
+  ]
+}
