@@ -63,6 +63,7 @@ public class OpenApiConfig implements WebMvcConfigurer {
             | `400 Bad Request` | Dados inválidos (validação, JSON malformado, ordenação inexistente) |
             | `401 Unauthorized` | Chave de API ausente, inválida ou revogada (header `X-API-Key`) |
             | `404 Not Found` | Recurso não encontrado |
+            | `429 Too Many Requests` | Limite de requisições por minuto excedido (veja o header `Retry-After`) |
             | `409 Conflict` | Operação bloqueada por regra de negócio (ex.: time que já tem partidas) |
 
             ## Autenticação (API Key)
