@@ -59,6 +59,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true; // pré-requisição do CORS não conta
         }
+        if (!ApiVersion.usaProtecoesV2(request)) {
+            return true; // v1 (original): sem rate limit
+        }
         String caminho = request.getRequestURI().substring(request.getContextPath().length());
         return RECURSOS.stream().noneMatch(r -> caminho.equals(r) || caminho.startsWith(r + "/"));
     }

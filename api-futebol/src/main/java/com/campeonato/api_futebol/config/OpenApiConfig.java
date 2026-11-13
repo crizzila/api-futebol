@@ -69,8 +69,13 @@ public class OpenApiConfig implements WebMvcConfigurer {
             | `429 Too Many Requests` | Limite de requisições por minuto excedido (veja o header `Retry-After`) |
             | `409 Conflict` | Operação bloqueada por regra de negócio (ex.: time que já tem partidas) |
 
-            ## Autenticação (API Key)
-            Todo **GET é público**. **POST, PUT e DELETE** e todo o grupo **API Keys** exigem o header `X-API-Key`. \
+            ## Versões da API (header `X-API-Version`)
+            - **v1** (sem o header, ou `X-API-Version: 1`): comportamento original, **sem** chave de API, rate limit, CORS e idempotência.
+            - **v2** (`X-API-Version: 2`): todas as proteções ativas (chave de API, rate limit, CORS e idempotência).
+            - O grupo **API Keys** é novo e sempre exige chave. Valor diferente de 1 ou 2 retorna `400`.
+
+            ## Autenticação (API Key, versão 2)
+            Na **v2**, todo **GET é público**. **POST, PUT e DELETE** e todo o grupo **API Keys** exigem o header `X-API-Key`. \
             Clique em **Authorize**, cole sua chave e use os endpoints protegidos (cadeado).
 
             ## Por onde começar
@@ -152,6 +157,42 @@ public class OpenApiConfig implements WebMvcConfigurer {
                                 .content(new Content().addMediaType("application/json", new MediaType()
                                         .schema(new Schema<>().$ref("#/components/schemas/ApiError")))));
                     }));
+        };
+    }
+
+    /**
+     * Documenta o header X-API-Version em todas as operações dos 5 recursos. O campo já vem preenchido
+     * com "2" (versão protegida); trocar para "1" mostra o comportamento original, sem proteções.
+     */
+    @Bean
+    public OpenApiCustomizer versaoCustomizer() {
+        List<String> recursos = List.of("/times", "/estadios", "/jogadores", "/campeonatos", "/partidas");
+        return openApi -> {
+            if (openApi.getPaths() == null) {
+                return;
+            }
+            openApi.getPaths().forEach((caminho, pathItem) -> {
+                boolean versionado = recursos.stream().anyMatch(r -> caminho.equals(r) || caminho.startsWith(r + "/"));
+                if (!versionado) {
+                    return;
+                }
+                pathItem.readOperations().forEach(operacao -> {
+                    StringSchema esquema = new StringSchema();
+                    esquema.setEnum(List.of("1", "2"));
+                    esquema.setDefault("2");
+                    operacao.addParametersItem(new HeaderParameter()
+                            .name("X-API-Version")
+                            .required(false)
+                            .description("Versão da API. **1** = original (sem chave de API, rate limit, CORS e "
+                                    + "idempotência). **2** = com todas as proteções. Sem o header vale a versão 1. "
+                                    + "Outro valor retorna 400.")
+                            .schema(esquema));
+                    operacao.getResponses().addApiResponse("400", new ApiResponse()
+                            .description("Dados inválidos ou valor inválido em X-API-Version")
+                            .content(new Content().addMediaType("application/json", new MediaType()
+                                    .schema(new Schema<>().$ref("#/components/schemas/ApiError")))));
+                });
+            });
         };
     }
 

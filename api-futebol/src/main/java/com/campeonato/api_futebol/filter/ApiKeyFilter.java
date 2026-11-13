@@ -51,6 +51,9 @@ public class ApiKeyFilter extends OncePerRequestFilter {
         if (caminho.equals("/api-keys") || caminho.startsWith("/api-keys/")) {
             return false; // /api-keys: qualquer método (inclusive GET) exige chave
         }
+        if (!ApiVersion.usaProtecoesV2(request)) {
+            return true; // v1 (original): sem chave de API
+        }
         boolean escrita = "POST".equalsIgnoreCase(metodo) || "PUT".equalsIgnoreCase(metodo)
                 || "DELETE".equalsIgnoreCase(metodo) || "PATCH".equalsIgnoreCase(metodo);
         return !(escrita && RECURSOS.stream().anyMatch(r -> caminho.equals(r) || caminho.startsWith(r + "/")));

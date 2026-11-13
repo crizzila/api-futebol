@@ -1,5 +1,6 @@
 package com.campeonato.api_futebol.config;
 
+import com.campeonato.api_futebol.filter.CorsPorVersaoFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +23,7 @@ import java.util.List;
 public class CorsConfig {
 
     @Bean
-    public FilterRegistrationBean<CorsFilter> corsFilter(
+    public FilterRegistrationBean<CorsPorVersaoFilter> corsFilter(
             // Lista separada por vírgula (variável CORS_ALLOWED_ORIGINS). NUNCA usar "*".
             @Value("${app.cors.allowed-origins}") String origensPermitidas) {
 
@@ -43,7 +44,9 @@ public class CorsConfig {
         UrlBasedCorsConfigurationSource fonte = new UrlBasedCorsConfigurationSource();
         fonte.registerCorsConfiguration("/**", config);
 
-        FilterRegistrationBean<CorsFilter> registro = new FilterRegistrationBean<>(new CorsFilter(fonte));
+        // O CorsPorVersaoFilter só chama o CorsFilter nas requisições da v2 (a v1 não tem CORS)
+        FilterRegistrationBean<CorsPorVersaoFilter> registro =
+                new FilterRegistrationBean<>(new CorsPorVersaoFilter(new CorsFilter(fonte)));
         // HIGHEST_PRECEDENCE + 1: logo depois do filtro do Spring que lê X-Forwarded-Proto/Host (que usa a
         // precedência máxima). Assim o CORS enxerga o endereço público (https) atrás do proxy do Render;
         // sem isso, o POST do próprio Swagger seria tratado como "outra origem" e barrado com 403.

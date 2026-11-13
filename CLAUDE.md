@@ -52,8 +52,12 @@ Configuração por variáveis de ambiente: `INITIAL_API_KEY`, `CORS_ALLOWED_ORIG
 - Guardar só respostas 2xx. Usar wrapper que permita ler o corpo da requisição mais de uma vez.
 
 ### Etapa 5 - Versionamento por header `X-API-Version`
-- Em `GET /times` e `GET /times/{id}`. v1 = formato atual. v2 = record `TimeV2Response`: id, nome, sigla, anoFundacao, estadio {nome, capacidade}, totalJogadores, totalCampeonatos, mais links HATEOAS.
-- Sem header = v1. Valor inválido (ex.: 3 ou abc) = 400 (ApiError). Devolver o header `X-API-Version` na resposta. Documentar o header no Swagger.
+**REVISADA pelo aluno (substitui o texto antigo com `TimeV2Response`; NÃO criar formato novo de resposta):**
+- v1 (sem header ou `1`) = comportamento ORIGINAL da Parte 1: sem chave de API, sem rate limit, sem CORS, sem idempotência.
+- v2 (`X-API-Version: 2`) = TUDO das Etapas 1 a 4 (e as próximas funções). Vale para os 5 recursos. `/api-keys` é novo e sempre exige chave.
+- Valor inválido (ex.: 3 ou abc) = 400 (ApiError). Devolver o header `X-API-Version` na resposta. Documentar o header no Swagger (campo já vem com "2").
+- Implementação: `filter/ApiVersion` (regra única), `ApiVersionFilter`, `CorsPorVersaoFilter`; cada filtro pula quando for v1.
+- Frontend (Etapa 7) deve enviar `X-API-Version: 2`.
 
 ### Etapa 6 - Documentação
 Swagger (esquema X-API-Key, headers, respostas 401/422/429), README (seção Parte 2 com exemplos curl) e coleção Postman (variáveis apiKey e idempotencyKey, requests novos).

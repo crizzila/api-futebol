@@ -67,6 +67,9 @@ public class IdempotencyFilter extends OncePerRequestFilter {
         if (chave == null || chave.isBlank()) {
             return true;
         }
+        if (!ApiVersion.usaProtecoesV2(request)) {
+            return true; // v1 (original): sem idempotência, o header é ignorado
+        }
         String caminho = request.getRequestURI().substring(request.getContextPath().length());
         return RECURSOS.stream().noneMatch(r -> caminho.equals(r) || caminho.startsWith(r + "/"));
     }
