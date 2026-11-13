@@ -60,9 +60,6 @@ body {
    (o header continua documentado no /v3/api-docs e na descrição da API) */
 .swagger-ui tr[data-param-name="X-API-Version"] { display: none; }
 
-/* Na V1 (original) não há idempotência: esconde o campo X-Idempotency-Key */
-body.versao-1 .swagger-ui tr[data-param-name="X-Idempotency-Key"] { display: none; }
-
 /* Bloco de informações (título e descrição da API) */
 .swagger-ui .info { margin: 30px 0 10px; }
 .swagger-ui .info .title { color: var(--verde-escuro); font-weight: 800; }

@@ -50,8 +50,6 @@
                 ? "Original: sem chave de API, rate limit, CORS e idempotência"
                 : "Chave de API, rate limit, CORS e idempotência ativos";
             seletorVersao.classList.toggle("versao-v1", v1);
-            // Na V1 não existe idempotência: o CSS esconde o campo X-Idempotency-Key (classe no body)
-            document.body.classList.toggle("versao-1", v1);
         }
 
         seletorVersao.value = versaoSalva();
@@ -59,11 +57,14 @@
         seletorVersao.addEventListener("change", function () {
             try { sessionStorage.setItem("versaoApi", seletorVersao.value); } catch (e) { /* ignora */ }
             atualizarDica();
+            iniciarSwagger(); // recarrega a documentação da versão escolhida
         });
 
-        window.onload = function () {
+        // Cada versão tem a sua documentação: /v3/api-docs/v1 (API original) e /v3/api-docs/v2 (com as proteções).
+        // Ao trocar o menu, o Swagger é montado de novo com a documentação da outra versão.
+        function iniciarSwagger() {
             window.ui = SwaggerUIBundle({
-                url: "/v3/api-docs",
+                url: "/v3/api-docs/v" + seletorVersao.value,
                 dom_id: "#swagger-ui",
                 deepLinking: true,
                 persistAuthorization: true, // mantém a chave digitada no Authorize ao recarregar
@@ -89,7 +90,9 @@
                     return req;
                 }
             });
-        };
+        }
+
+        window.onload = iniciarSwagger;
     </script>
 </body>
 </html>
