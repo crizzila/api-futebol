@@ -50,6 +50,8 @@
                 ? "Original: sem chave de API, rate limit, CORS e idempotência"
                 : "Chave de API, rate limit, CORS e idempotência ativos";
             seletorVersao.classList.toggle("versao-v1", v1);
+            // Na V1 não existe idempotência: o CSS esconde o campo X-Idempotency-Key (classe no body)
+            document.body.classList.toggle("versao-1", v1);
         }
 
         seletorVersao.value = versaoSalva();
