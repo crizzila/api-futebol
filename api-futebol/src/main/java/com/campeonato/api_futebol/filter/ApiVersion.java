@@ -4,8 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Regras de versão da API, num lugar só (usadas por todos os filtros).
- *  - v1 (sem header ou "1"): comportamento original, SEM chave de API, rate limit, CORS e idempotência.
- *  - v2 ("2"): todas as proteções ativas.
+ *  - v1 (só com X-API-Version: 1): comportamento original, SEM chave de API, rate limit, CORS e idempotência.
+ *  - v2 (header "2" OU sem header): todas as proteções ativas. Padrão seguro: a v1 precisa ser pedida de propósito.
  * Exceção: /api-keys é um recurso novo (não existia na v1) e sempre usa as proteções da v2.
  */
 public final class ApiVersion {
@@ -15,11 +15,11 @@ public final class ApiVersion {
     private ApiVersion() {
     }
 
-    /** Versão pedida no header: 1 (ausente ou "1"), 2 ("2") ou null se o valor for inválido. */
+    /** Versão pedida no header: 1 ("1"), 2 (ausente ou "2") ou null se o valor for inválido. */
     public static Integer pedida(HttpServletRequest request) {
         String valor = request.getHeader(HEADER);
         if (valor == null || valor.isBlank()) {
-            return 1;
+            return 2; // padrão seguro: quem não pede versão usa a v2 (protegida)
         }
         return switch (valor.trim()) {
             case "1" -> 1;

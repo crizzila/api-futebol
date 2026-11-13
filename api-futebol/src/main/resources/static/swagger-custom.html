@@ -17,6 +17,15 @@
             <h1>API Campeonato de Futebol</h1>
             <p>Times, jogadores, campeonatos e partidas &middot; REST nível 3 (HATEOAS)</p>
         </div>
+        <!-- Menu de versão: o valor escolhido é enviado no header X-API-Version em todas as requisições do Swagger -->
+        <div class="versao-box">
+            <label for="versao-api">Versão da API</label>
+            <select id="versao-api">
+                <option value="1">V1 &ndash; original</option>
+                <option value="2" selected>V2 &ndash; protegida</option>
+            </select>
+            <small id="versao-dica"></small>
+        </div>
     </header>
 
     <div id="swagger-ui"></div>
@@ -24,6 +33,32 @@
     <script src="/swagger-ui/swagger-ui-bundle.js"></script>
     <script src="/swagger-ui/swagger-ui-standalone-preset.js"></script>
     <script>
+        // ----- Menu de versão (V1/V2). Padrão: V2. A escolha fica salva na aba (sessionStorage). -----
+        var seletorVersao = document.getElementById("versao-api");
+        var dicaVersao = document.getElementById("versao-dica");
+
+        function versaoSalva() {
+            try {
+                var v = sessionStorage.getItem("versaoApi");
+                return (v === "1" || v === "2") ? v : "2";
+            } catch (e) { return "2"; } // sem sessionStorage: usa o padrão V2
+        }
+
+        function atualizarDica() {
+            var v1 = seletorVersao.value === "1";
+            dicaVersao.textContent = v1
+                ? "Original: sem chave de API, rate limit, CORS e idempotência"
+                : "Chave de API, rate limit, CORS e idempotência ativos";
+            seletorVersao.classList.toggle("versao-v1", v1);
+        }
+
+        seletorVersao.value = versaoSalva();
+        atualizarDica();
+        seletorVersao.addEventListener("change", function () {
+            try { sessionStorage.setItem("versaoApi", seletorVersao.value); } catch (e) { /* ignora */ }
+            atualizarDica();
+        });
+
         window.onload = function () {
             window.ui = SwaggerUIBundle({
                 url: "/v3/api-docs",
@@ -40,6 +75,10 @@
                 requestInterceptor: function (req) {
                     try {
                         var url = new URL(req.url);
+                        // Envia a versão escolhida no menu (não vale para o carregamento do /v3/api-docs)
+                        if (!url.pathname.startsWith("/v3/api-docs")) {
+                            req.headers["X-API-Version"] = seletorVersao.value;
+                        }
                         var valores = url.searchParams.getAll("sort").filter(function (v) { return v !== "string"; });
                         url.searchParams.delete("sort");
                         valores.forEach(function (v) { url.searchParams.append("sort", v); });

@@ -70,8 +70,8 @@ public class OpenApiConfig implements WebMvcConfigurer {
             | `409 Conflict` | Operação bloqueada por regra de negócio (ex.: time que já tem partidas) |
 
             ## Versões da API (header `X-API-Version`)
-            - **v1** (sem o header, ou `X-API-Version: 1`): comportamento original, **sem** chave de API, rate limit, CORS e idempotência.
-            - **v2** (`X-API-Version: 2`): todas as proteções ativas (chave de API, rate limit, CORS e idempotência).
+            - **v1** (somente com `X-API-Version: 1`): comportamento original, **sem** chave de API, rate limit, CORS e idempotência.
+            - **v2** (`X-API-Version: 2` **ou sem o header**): todas as proteções ativas (chave de API, rate limit, CORS e idempotência).
             - O grupo **API Keys** é novo e sempre exige chave. Valor diferente de 1 ou 2 retorna `400`.
 
             ## Autenticação (API Key, versão 2)
@@ -184,8 +184,9 @@ public class OpenApiConfig implements WebMvcConfigurer {
                             .name("X-API-Version")
                             .required(false)
                             .description("Versão da API. **1** = original (sem chave de API, rate limit, CORS e "
-                                    + "idempotência). **2** = com todas as proteções. Sem o header vale a versão 1. "
-                                    + "Outro valor retorna 400.")
+                                    + "idempotência). **2** = com todas as proteções. Sem o header vale a versão 2. "
+                                    + "Outro valor retorna 400. Nesta página, a versão é escolhida no menu "
+                                    + "\"Versão da API\" do topo.")
                             .schema(esquema));
                     operacao.getResponses().addApiResponse("400", new ApiResponse()
                             .description("Dados inválidos ou valor inválido em X-API-Version")

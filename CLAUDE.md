@@ -53,8 +53,8 @@ Configuração por variáveis de ambiente: `INITIAL_API_KEY`, `CORS_ALLOWED_ORIG
 
 ### Etapa 5 - Versionamento por header `X-API-Version`
 **REVISADA pelo aluno (substitui o texto antigo com `TimeV2Response`; NÃO criar formato novo de resposta):**
-- v1 (sem header ou `1`) = comportamento ORIGINAL da Parte 1: sem chave de API, sem rate limit, sem CORS, sem idempotência.
-- v2 (`X-API-Version: 2`) = TUDO das Etapas 1 a 4 (e as próximas funções). Vale para os 5 recursos. `/api-keys` é novo e sempre exige chave.
+- v1 (SOMENTE com `X-API-Version: 1`) = comportamento ORIGINAL da Parte 1: sem chave de API, sem rate limit, sem CORS, sem idempotência.
+- v2 (`X-API-Version: 2` OU sem header = padrão seguro) = TUDO das Etapas 1 a 4 (e as próximas funções). Vale para os 5 recursos. `/api-keys` é novo e sempre exige chave.
 - Valor inválido (ex.: 3 ou abc) = 400 (ApiError). Devolver o header `X-API-Version` na resposta. Documentar o header no Swagger (campo já vem com "2").
 - Implementação: `filter/ApiVersion` (regra única), `ApiVersionFilter`, `CorsPorVersaoFilter`; cada filtro pula quando for v1.
 - Frontend (Etapa 7) deve enviar `X-API-Version: 2`.

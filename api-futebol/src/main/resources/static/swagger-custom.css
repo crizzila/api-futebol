@@ -29,6 +29,37 @@ body {
 .hero h1 { margin: 0; font-size: 32px; letter-spacing: .5px; }
 .hero p { margin: 6px 0 0; opacity: .9; font-size: 15px; }
 
+/* Menu de versão (V1/V2) no cabeçalho */
+.hero { flex-wrap: wrap; }
+.versao-box {
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 230px;
+    padding: 12px 16px;
+    background: rgba(0,0,0,.22);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 10px;
+}
+.versao-box label { font-size: 12px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; opacity: .9; }
+.versao-box select {
+    font-size: 15px;
+    font-weight: 700;
+    padding: 8px 10px;
+    border: 2px solid var(--amarelo);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--verde-escuro);
+    cursor: pointer;
+}
+.versao-box select.versao-v1 { border-color: #ff8a65; color: #b23c17; } /* V1 = sem proteções: cor de alerta */
+.versao-box small { font-size: 12px; opacity: .9; line-height: 1.3; }
+
+/* O campo X-API-Version de cada operação fica escondido: quem decide é o menu do topo
+   (o header continua documentado no /v3/api-docs e na descrição da API) */
+.swagger-ui tr[data-param-name="X-API-Version"] { display: none; }
+
 /* Bloco de informações (título e descrição da API) */
 .swagger-ui .info { margin: 30px 0 10px; }
 .swagger-ui .info .title { color: var(--verde-escuro); font-weight: 800; }
