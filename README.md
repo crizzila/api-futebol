@@ -225,6 +225,31 @@ curl -i $API/times -H "Origin: http://site-qualquer.com"
 
 O CORS só atua no navegador (curl e Postman não são bloqueados). Os headers `Location`, `Retry-After`, `X-RateLimit-*` e `Idempotent-Replayed` são expostos ao JavaScript.
 
+### Frontend (`docs/`)
+
+Página em HTML + CSS + JavaScript puro (sem build), publicada pelo **GitHub Pages** (pasta `/docs`). Ela consome a API publicada no Render.
+
+| Arquivo | Para que serve |
+|---|---|
+| `docs/config.js` | `API_BASE_URL`: o endereço da API (em `localhost` usa a API local). **Nunca** contém chave de API |
+| `docs/index.html` e `docs/style.css` | estrutura e visual (mesmo tema verde do Swagger) |
+| `docs/app.js` | chamadas à API, paginação, cadastro e mensagens de erro |
+
+- **Chave de API:** digitada pelo usuário no topo da página e guardada só no `sessionStorage` (some ao fechar a aba). Vai no header `X-API-Key` apenas nas escritas (o `GET` é público).
+- **Lista de times:** paginada **seguindo os links HATEOAS** (`_links.next` e `_links.prev`); o botão só fica ativo quando a API informa o link. Links que não apontam para a própria API são recusados.
+- **Cadastro de time:** envia `X-Idempotency-Key` com `crypto.randomUUID()`. O botão **Reenviar o último** repete o cadastro com a **mesma** chave: a API devolve a resposta guardada (`Idempotent-Replayed: true`) e nada é criado de novo.
+- **Seletor de versão:** V2 (padrão) envia chave de API, idempotência e passa pelo CORS. A V1 é a API original e **não tem CORS**, então o navegador bloqueia a resposta (a página explica isso).
+- **Mensagens amigáveis:** `400` (lista os campos inválidos), `401` (chave ausente ou inválida), `409`/`422` (idempotência), `429` (informa quantos segundos esperar, pelo `Retry-After`) e falha de rede/CORS.
+- O saldo do rate limit (`X-RateLimit-*`) aparece no rodapé: o navegador só consegue ler esses headers porque a API os expõe no CORS.
+
+**Publicar no GitHub Pages:** em *Settings → Pages*, escolha *Deploy from a branch*, a branch (`master`) e a pasta `/docs`. O endereço fica `https://crizzila.github.io/api-futebol/`. No Render, adicione essa origem (só o domínio, sem o caminho) em `CORS_ALLOWED_ORIGINS`, mantendo as origens locais se quiser testar no computador:
+
+```
+CORS_ALLOWED_ORIGINS=https://crizzila.github.io,http://localhost:5500,http://127.0.0.1:5500
+```
+
+Para testar localmente: rode a API (porta 8080) e, na pasta `docs/`, `python -m http.server 5500`; abra `http://localhost:5500`.
+
 ### Swagger
 
 A página `/` tem um menu **Versão da API** no topo (padrão **V2**): cada versão carrega a sua própria documentação (`/v3/api-docs/v1` e `/v3/api-docs/v2`). A V1 mostra só a API original; a V2 acrescenta o grupo **API Keys**, o botão **Authorize** (esquema `X-API-Key`), o campo `X-Idempotency-Key`, os headers de rate limit e as respostas `401`, `409`, `422` e `429`.
@@ -242,6 +267,7 @@ src/main/java/com/campeonato/api_futebol
 └── config/       OpenAPI (documentação por versão), CORS e criação da chave inicial
 src/main/resources/static/   página customizada do Swagger (HTML + CSS)
 postman/                      coleção do Postman
+docs/                         frontend (GitHub Pages)
 ```
 
 ## Swagger customizado
