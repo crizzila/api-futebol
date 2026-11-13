@@ -6,6 +6,8 @@ import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.parameters.HeaderParameter;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
@@ -63,6 +65,7 @@ public class OpenApiConfig implements WebMvcConfigurer {
             | `400 Bad Request` | Dados inválidos (validação, JSON malformado, ordenação inexistente) |
             | `401 Unauthorized` | Chave de API ausente, inválida ou revogada (header `X-API-Key`) |
             | `404 Not Found` | Recurso não encontrado |
+            | `422 Unprocessable Entity` | `X-Idempotency-Key` reutilizada com outro corpo ou outra rota |
             | `429 Too Many Requests` | Limite de requisições por minuto excedido (veja o header `Retry-After`) |
             | `409 Conflict` | Operação bloqueada por regra de negócio (ex.: time que já tem partidas) |
 
@@ -149,6 +152,42 @@ public class OpenApiConfig implements WebMvcConfigurer {
                                 .content(new Content().addMediaType("application/json", new MediaType()
                                         .schema(new Schema<>().$ref("#/components/schemas/ApiError")))));
                     }));
+        };
+    }
+
+    /**
+     * Documenta a idempotência: nos POST dos 5 recursos, adiciona o header opcional X-Idempotency-Key
+     * (campo aparece no Swagger para ser preenchido) e as respostas 409 e 422.
+     */
+    @Bean
+    public OpenApiCustomizer idempotenciaCustomizer() {
+        List<String> recursos = List.of("/times", "/estadios", "/jogadores", "/campeonatos", "/partidas");
+        return openApi -> {
+            if (openApi.getPaths() == null) {
+                return;
+            }
+            openApi.getPaths().forEach((caminho, pathItem) -> {
+                boolean recursoIdempotente = recursos.stream()
+                        .anyMatch(r -> caminho.equals(r) || caminho.startsWith(r + "/"));
+                if (!recursoIdempotente || pathItem.getPost() == null) {
+                    return;
+                }
+                var operacao = pathItem.getPost();
+                operacao.addParametersItem(new HeaderParameter()
+                        .name("X-Idempotency-Key")
+                        .required(false)
+                        .description("Opcional. Repetir o POST com a mesma chave e o mesmo corpo devolve a resposta "
+                                + "guardada (header `Idempotent-Replayed: true`) sem criar de novo.")
+                        .schema(new StringSchema().example("abc-123")));
+                operacao.getResponses().addApiResponse("409", new ApiResponse()
+                        .description("Já existe uma requisição em processamento com esta X-Idempotency-Key")
+                        .content(new Content().addMediaType("application/json", new MediaType()
+                                .schema(new Schema<>().$ref("#/components/schemas/ApiError")))));
+                operacao.getResponses().addApiResponse("422", new ApiResponse()
+                        .description("A X-Idempotency-Key já foi usada com outro corpo ou outra rota")
+                        .content(new Content().addMediaType("application/json", new MediaType()
+                                .schema(new Schema<>().$ref("#/components/schemas/ApiError")))));
+            });
         };
     }
 
