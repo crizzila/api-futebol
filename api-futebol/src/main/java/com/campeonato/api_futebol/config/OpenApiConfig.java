@@ -1,6 +1,14 @@
 package com.campeonato.api_futebol.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
@@ -18,6 +26,8 @@ import java.util.List;
  */
 @Configuration
 public class OpenApiConfig implements WebMvcConfigurer {
+
+    private static final String ESQUEMA_API_KEY = "ApiKeyAuth";
 
     private static final String DESCRICAO = """
             ## O que é esta API?
@@ -51,10 +61,16 @@ public class OpenApiConfig implements WebMvcConfigurer {
             | `201 Created` | Recurso criado (o cabeçalho `Location` aponta para ele) |
             | `204 No Content` | Recurso removido com sucesso |
             | `400 Bad Request` | Dados inválidos (validação, JSON malformado, ordenação inexistente) |
+            | `401 Unauthorized` | Chave de API ausente, inválida ou revogada (header `X-API-Key`) |
             | `404 Not Found` | Recurso não encontrado |
             | `409 Conflict` | Operação bloqueada por regra de negócio (ex.: time que já tem partidas) |
 
+            ## Autenticação (API Key)
+            Todo **GET é público**. **POST, PUT e DELETE** e todo o grupo **API Keys** exigem o header `X-API-Key`. \
+            Clique em **Authorize**, cole sua chave e use os endpoints protegidos (cadeado).
+
             ## Por onde começar
+            0. (Só para escrever) clique em **Authorize** e informe sua chave de API.
             1. Cadastre um **Time** (`POST /times`) já com seu estádio. Cadastre um segundo time.
             2. Cadastre **Jogadores** informando o time: `"time": { "id": 1 }`.
             3. Cadastre um **Campeonato** e adicione os times com `POST /campeonatos/{id}/times/{timeId}`.
@@ -72,7 +88,14 @@ public class OpenApiConfig implements WebMvcConfigurer {
                                 .name("Cristian Gonçalves DEV")
                                 .url("https://github.com/crizzila/api-futebol"))
                         .license(new License().name("Projeto acadêmico")))
+                // Botão "Authorize": a chave é enviada no header X-API-Key
+                .components(new Components().addSecuritySchemes(ESQUEMA_API_KEY, new SecurityScheme()
+                        .type(SecurityScheme.Type.APIKEY)
+                        .in(SecurityScheme.In.HEADER)
+                        .name("X-API-Key")
+                        .description("Chave de API. Necessária em POST, PUT e DELETE e em todo o grupo /api-keys. GETs são públicos.")))
                 .tags(List.of(
+                        new Tag().name("API Keys").description("Gerenciamento de chaves de acesso (exige X-API-Key)"),
                         new Tag().name("Times").description("Clubes de futebol e seus estádios (1:1) e jogadores (1:N)"),
                         new Tag().name("Estádios").description("Estádios sede dos times (1:1 com Time)"),
                         new Tag().name("Jogadores").description("Atletas vinculados a um time"),
@@ -98,6 +121,32 @@ public class OpenApiConfig implements WebMvcConfigurer {
                         operacao.getParameters().stream()
                                 .filter(parametro -> "sort".equals(parametro.getName()))
                                 .forEach(parametro -> parametro.setExample(List.of("id,asc")));
+                    }));
+        };
+    }
+
+    /**
+     * Marca com cadeado e documenta a resposta 401 só nos endpoints protegidos:
+     * tudo em /api-keys e qualquer método que não seja GET (espelha a regra do ApiKeyFilter).
+     */
+    @Bean
+    public OpenApiCustomizer segurancaCustomizer() {
+        return openApi -> {
+            if (openApi.getPaths() == null) {
+                return;
+            }
+            openApi.getPaths().forEach((caminho, pathItem) ->
+                    pathItem.readOperationsMap().forEach((metodo, operacao) -> {
+                        boolean protegido = caminho.startsWith("/api-keys")
+                                || metodo != PathItem.HttpMethod.GET;
+                        if (!protegido) {
+                            return;
+                        }
+                        operacao.addSecurityItem(new SecurityRequirement().addList(ESQUEMA_API_KEY));
+                        operacao.getResponses().addApiResponse("401", new ApiResponse()
+                                .description("Chave de API ausente, inválida ou revogada")
+                                .content(new Content().addMediaType("application/json", new MediaType()
+                                        .schema(new Schema<>().$ref("#/components/schemas/ApiError")))));
                     }));
         };
     }
