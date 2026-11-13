@@ -227,20 +227,47 @@ O CORS só atua no navegador (curl e Postman não são bloqueados). Os headers `
 
 ### Frontend (`docs/`)
 
-Página em HTML + CSS + JavaScript puro (sem build), publicada pelo **GitHub Pages** (pasta `/docs`). Ela consome a API publicada no Render.
+Aplicação web completa em HTML + CSS + JavaScript puro (módulos ES, sem build), publicada pelo **GitHub Pages** (pasta `/docs`). Ela consome a API publicada no Render e cobre **todos os recursos**: times, estádios, jogadores, campeonatos, partidas e chaves de API.
 
 | Arquivo | Para que serve |
 |---|---|
 | `docs/config.js` | `API_BASE_URL`: o endereço da API (em `localhost` usa a API local). **Nunca** contém chave de API |
-| `docs/index.html` e `docs/style.css` | estrutura e visual (mesmo tema verde do Swagger) |
-| `docs/app.js` | chamadas à API, paginação, cadastro e mensagens de erro |
+| `docs/index.html`, `docs/css/estilo.css` | estrutura e visual ("noite de jogo": menu escuro, papel creme, placar de estádio) |
+| `docs/js/api.js` | chamadas à API, versão, chave, erros, medidor de limite e registro de chamadas |
+| `docs/js/lista.js` | motor das telas: lista paginada por HATEOAS, busca, criar, editar e excluir |
+| `docs/js/formulario.js` | formulário em diálogo montado a partir da descrição dos campos (mostra o erro de cada campo) |
+| `docs/js/recursos.js` | descrição de cada tela (campos, colunas, cartões, placares e ações especiais) |
+| `docs/js/painel.js`, `docs/js/app.js` | tela inicial, menu, rotas (`#/times`...), barra superior |
+| `docs/js/ui.js`, `docs/js/erros.js` | blocos de interface e mensagens de erro amigáveis |
 
-- **Chave de API:** digitada pelo usuário no topo da página e guardada só no `sessionStorage` (some ao fechar a aba). Vai no header `X-API-Key` apenas nas escritas (o `GET` é público).
-- **Lista de times:** paginada **seguindo os links HATEOAS** (`_links.next` e `_links.prev`); o botão só fica ativo quando a API informa o link. Links que não apontam para a própria API são recusados.
-- **Cadastro de time:** envia `X-Idempotency-Key` com `crypto.randomUUID()`. O botão **Reenviar o último** repete o cadastro com a **mesma** chave: a API devolve a resposta guardada (`Idempotent-Replayed: true`) e nada é criado de novo.
-- **Seletor de versão:** V2 (padrão) envia chave de API, idempotência e passa pelo CORS. A V1 é a API original e **não tem CORS**, então o navegador bloqueia a resposta (a página explica isso).
-- **Mensagens amigáveis:** `400` (lista os campos inválidos), `401` (chave ausente ou inválida), `409`/`422` (idempotência), `429` (informa quantos segundos esperar, pelo `Retry-After`) e falha de rede/CORS.
-- O saldo do rate limit (`X-RateLimit-*`) aparece no rodapé: o navegador só consegue ler esses headers porque a API os expõe no CORS.
+**Telas e ações**
+
+| Tela | O que dá para fazer |
+|---|---|
+| **Painel** | contadores de cada recurso, últimas partidas, estado da conexão |
+| **Times** | listar, buscar por nome, cadastrar (com o estádio), editar, excluir, ver os jogadores do time, trocar o estádio |
+| **Estádios** | listar, buscar por nome ou capacidade mínima, cadastrar, editar, excluir (bloqueado se o estádio pertence a um time) |
+| **Jogadores** | listar, buscar por nome ou posição, cadastrar, editar (inclusive transferir de time), excluir |
+| **Campeonatos** | listar, buscar por nome ou ano, cadastrar, editar, excluir, **gerenciar os times participantes** (adicionar e remover) |
+| **Partidas** | placar de estádio, buscar por situação, cadastrar (mandante e visitante só entre os times do campeonato), editar, **registrar placar**, excluir |
+| **Chaves de API** | listar, criar (a chave completa aparece uma única vez, com botão de copiar), revogar |
+
+**Rotas protegidas na interface (versão 2)**
+
+- Todo **GET é público**: qualquer pessoa vê as telas de cadastros sem chave.
+- Para **criar, editar ou excluir** é preciso uma chave de API válida. A chave é digitada no topo e guardada só no `sessionStorage` (some ao fechar a aba); a página pergunta à API se ela vale (`GET /api-keys`) e mostra o resultado (cadeado fechado, aberto ou vermelho).
+- Sem chave válida, o app fica em **somente leitura**: os botões de escrita ficam apagados e, ao clicar, a página explica o motivo em vez de falhar com `401`.
+- A tela **Chaves de API** é restrita: até para listar exige chave (é a regra da API para `/api-keys`).
+
+**Recursos da Parte 2 visíveis na tela**
+
+- **Idempotência:** todo cadastro envia `X-Idempotency-Key` (`crypto.randomUUID()`). O aviso de sucesso tem o botão **Repetir com a mesma chave**: a API devolve a resposta guardada (`Idempotent-Replayed: true`) e nada é criado de novo.
+- **Registro de chamadas** (botão no topo): lista cada requisição com método, status, tempo e os selos `idempotente` e `Idempotent-Replayed`, com botão **Repetir**.
+- **Rate limit:** um medidor no topo mostra quantas requisições restam no minuto (`X-RateLimit-*`). O navegador só consegue ler esses headers porque a API os expõe no CORS.
+- **Seletor de versão:** V2 (padrão) liga chave, idempotência e CORS. A V1 é a API original e **não tem CORS**, então o navegador bloqueia as respostas (a página avisa que isso é esperado).
+- **HATEOAS:** a paginação só segue os links que a API devolve (`first`, `prev`, `next`, `last`), e editar/excluir usam os links `update`/`delete` do próprio recurso. Links que não apontam para a API configurada são recusados.
+- **Mensagens amigáveis:** `400` (campos inválidos junto de cada campo), `401`, `404`, `409`, `422`, `429` (com os segundos de espera) e falha de rede/CORS.
+- **Segurança:** os dados da API entram na tela como texto (nunca `innerHTML`), então um nome com HTML não é executado.
 
 **Publicar no GitHub Pages:** em *Settings → Pages*, escolha *Deploy from a branch*, a branch (`master`) e a pasta `/docs`. O endereço fica `https://crizzila.github.io/api-futebol/`. No Render, adicione essa origem (só o domínio, sem o caminho) em `CORS_ALLOWED_ORIGINS`, mantendo as origens locais se quiser testar no computador:
 
@@ -267,7 +294,7 @@ src/main/java/com/campeonato/api_futebol
 └── config/       OpenAPI (documentação por versão), CORS e criação da chave inicial
 src/main/resources/static/   página customizada do Swagger (HTML + CSS)
 postman/                      coleção do Postman
-docs/                         frontend (GitHub Pages)
+docs/                         frontend completo (GitHub Pages)
 ```
 
 ## Swagger customizado

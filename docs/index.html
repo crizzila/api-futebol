@@ -3,115 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Campeonato de Futebol - Times</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>">
-    <link rel="stylesheet" href="style.css">
+    <meta name="color-scheme" content="light">
+    <title>Campeonato FC</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><circle cx=%2216%22 cy=%2216%22 r=%2215%22 fill=%22%23e4501b%22/><path d=%22M16 8l5.7 4.1-2.2 6.7h-7l-2.2-6.7z%22 fill=%22%23121820%22/></svg>">
+    <link rel="stylesheet" href="css/estilo.css">
 </head>
 <body>
-    <header class="topo">
-        <div class="marca">
-            <span class="bola" aria-hidden="true">⚽</span>
-            <div>
-                <h1>Campeonato de Futebol</h1>
-                <p>Cliente web da API &middot; times com HATEOAS</p>
+    <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+    <div class="app">
+        <!-- Menu lateral: os itens são montados pelo app.js -->
+        <aside class="lateral" id="lateral">
+            <a class="logo" href="#/">
+                <svg class="logo-marca" viewBox="0 0 32 32" aria-hidden="true">
+                    <circle cx="16" cy="16" r="14.5" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M16 8.5l5.9 4.3-2.3 6.9h-7.2l-2.3-6.9z" fill="currentColor"/>
+                    <path d="M16 8.5V2M21.9 12.8l6.2-2M19.6 19.7l3.8 5.4M12.4 19.7l-3.8 5.4M10.1 12.8l-6.2-2"
+                          stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span class="logo-texto"><strong>Campeonato</strong><em>Gestão de futebol</em></span>
+            </a>
+            <nav class="nav" id="nav" aria-label="Seções"></nav>
+            <p class="lateral-rodape">API <span id="api-host"></span></p>
+        </aside>
+
+        <div class="principal">
+            <!-- Barra superior: versão da API, chave e uso do limite -->
+            <header class="barra">
+                <div class="grupo">
+                    <span class="grupo-rotulo" id="rotulo-versao">Versão da API</span>
+                    <div class="seg" role="radiogroup" aria-labelledby="rotulo-versao">
+                        <button type="button" role="radio" data-versao="2">V2 <small>protegida</small></button>
+                        <button type="button" role="radio" data-versao="1">V1 <small>original</small></button>
+                    </div>
+                </div>
+
+                <div class="grupo grupo-chave">
+                    <label class="grupo-rotulo" for="chave">Chave de API</label>
+                    <div class="campo-chave">
+                        <span class="chave-icone" id="chave-icone" aria-hidden="true"></span>
+                        <input id="chave" type="password" autocomplete="off" spellcheck="false"
+                               placeholder="cole sua chave para editar dados">
+                        <button type="button" class="btn-texto" id="limpar-chave">Limpar</button>
+                    </div>
+                    <span class="chave-estado" id="chave-estado" role="status"></span>
+                </div>
+
+                <div class="grupo grupo-limite" id="grupo-limite" hidden>
+                    <span class="grupo-rotulo">Limite por minuto</span>
+                    <div class="medidor"><span class="medidor-barra" id="medidor-barra"></span></div>
+                    <span class="medidor-texto" id="medidor-texto"></span>
+                </div>
+
+                <button type="button" class="btn-registro" id="btn-registro" aria-controls="gaveta" aria-expanded="false">
+                    <span id="icone-registro"></span> Chamadas <b id="contador">0</b>
+                </button>
+            </header>
+
+            <div class="faixa oculto" id="faixa-v1" role="note">
+                <strong>Versão 1 selecionada.</strong>
+                A API original não tem CORS: o navegador bloqueia a leitura das respostas de outro site, então as telas
+                abaixo não conseguem carregar os dados. É o comportamento esperado da v1. Volte para a <b>V2</b>.
             </div>
+
+            <main id="conteudo" tabindex="-1"></main>
         </div>
+    </div>
 
-        <div class="controles">
-            <div class="controle">
-                <label for="versao">Versão da API</label>
-                <select id="versao">
-                    <option value="2" selected>V2 &ndash; protegida</option>
-                    <option value="1">V1 &ndash; original</option>
-                </select>
-                <small id="versao-dica"></small>
-            </div>
+    <!-- Registro de chamadas: mostra cada requisição feita à API -->
+    <aside class="gaveta" id="gaveta" aria-label="Registro de chamadas" hidden>
+        <header class="gaveta-cab">
+            <h2>Registro de chamadas</h2>
+            <button type="button" class="btn-icone" id="fechar-registro" aria-label="Fechar"></button>
+        </header>
+        <p class="gaveta-ajuda">Cada requisição à API aparece aqui. Em chamadas de cadastro (V2) use <b>Repetir</b> para
+            reenviar com a mesma chave de idempotência: a API responde <code>Idempotent-Replayed</code> e nada é criado de novo.</p>
+        <ol class="chamadas" id="chamadas"></ol>
+    </aside>
 
-            <div class="controle">
-                <label for="chave">Chave de API</label>
-                <div class="linha">
-                    <input id="chave" type="password" autocomplete="off" spellcheck="false"
-                           placeholder="cole sua chave aqui">
-                    <button type="button" id="limpar-chave" class="secundario">Limpar</button>
-                </div>
-                <small id="chave-dica">Fica só nesta aba (sessionStorage). Nunca vai para o código.</small>
-            </div>
-        </div>
-    </header>
-
-    <main>
-        <div id="aviso" class="aviso oculto" role="status" aria-live="polite"></div>
-
-        <section class="cartao">
-            <div class="cartao-topo">
-                <h2>Times</h2>
-                <button type="button" id="recarregar" class="secundario">Recarregar</button>
-            </div>
-            <p id="resumo" class="resumo">Carregando...</p>
-
-            <div class="tabela-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nome</th>
-                            <th>Sigla</th>
-                            <th>Fundação</th>
-                            <th>Estádio</th>
-                            <th>Capacidade</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabela"></tbody>
-                </table>
-            </div>
-
-            <nav class="paginacao" aria-label="Paginação">
-                <button type="button" id="anterior" disabled>&lsaquo; Anterior</button>
-                <span id="pagina">&nbsp;</span>
-                <button type="button" id="proxima" disabled>Próxima &rsaquo;</button>
-            </nav>
-        </section>
-
-        <section class="cartao">
-            <h2>Cadastrar time</h2>
-            <form id="form-time" novalidate>
-                <div class="grade">
-                    <div class="campo">
-                        <label for="nome">Nome do time</label>
-                        <input id="nome" required minlength="3" maxlength="50" placeholder="Palmeiras">
-                    </div>
-                    <div class="campo">
-                        <label for="sigla">Sigla (3 letras)</label>
-                        <input id="sigla" required maxlength="3" pattern="[A-Za-z]{3}" placeholder="PAL">
-                    </div>
-                    <div class="campo">
-                        <label for="fundacao">Data de fundação</label>
-                        <input id="fundacao" type="date" required>
-                    </div>
-                    <div class="campo">
-                        <label for="estadio">Estádio</label>
-                        <input id="estadio" required minlength="3" maxlength="100" placeholder="Allianz Parque">
-                    </div>
-                    <div class="campo">
-                        <label for="capacidade">Capacidade (mín. 1000)</label>
-                        <input id="capacidade" type="number" required min="1000" step="1" placeholder="43713">
-                    </div>
-                </div>
-
-                <div class="acoes">
-                    <button type="submit" id="cadastrar">Cadastrar</button>
-                    <button type="button" id="reenviar" class="secundario" disabled>
-                        Reenviar o último (mesma chave de idempotência)
-                    </button>
-                </div>
-                <p id="info-idempotencia" class="resumo"></p>
-            </form>
-        </section>
-
-        <p id="limite" class="rodape"></p>
-    </main>
+    <div class="toasts" id="toasts" aria-live="polite"></div>
 
     <script src="config.js"></script>
-    <script src="app.js"></script>
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>

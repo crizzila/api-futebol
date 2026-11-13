@@ -63,6 +63,7 @@ Configuração por variáveis de ambiente: `INITIAL_API_KEY`, `CORS_ALLOWED_ORIG
 Swagger (esquema X-API-Key, headers, respostas 401/422/429), README (seção Parte 2 com exemplos curl) e coleção Postman (variáveis apiKey e idempotencyKey, requests novos).
 
 ### Etapa 7 - Frontend (HTML+CSS+JS puro, sem build) em `docs/` na raiz do repositório (GitHub Pages: branch main, pasta /docs)
+**AMPLIADA pelo aluno:** o frontend virou uma aplicação completa (todas as 5 entidades + chaves de API, CRUD, buscas, gestão de times do campeonato, registro de chamadas) com identidade visual própria, em módulos ES (`docs/js/`, `docs/css/`). Mantém: chave só no sessionStorage, X-Idempotency-Key com randomUUID, seletor V1/V2 (envia X-API-Version), links HATEOAS e mensagens para 400/401/429.
 - `config.js` com `API_BASE_URL`. Campo "Chave de API" digitado pelo usuário, guardado em sessionStorage (NUNCA colocar chave no código).
 - Lista times paginada seguindo os links HATEOAS (`next`/`prev`), cadastro de time enviando `X-Idempotency-Key` (crypto.randomUUID()), seletor de versão v1/v2, mensagens amigáveis para 400/401/429.
 
