@@ -3,6 +3,7 @@ package com.campeonato.api_futebol.config;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
@@ -152,6 +153,7 @@ public class OpenApiConfig implements WebMvcConfigurer {
                 .addOpenApiCustomizer(segurancaCustomizer())
                 .addOpenApiCustomizer(versaoCustomizer())
                 .addOpenApiCustomizer(idempotenciaCustomizer())
+                .addOpenApiCustomizer(limiteRequisicoesCustomizer())
                 .addOpenApiCustomizer(tagsSemDuplicatasCustomizer())
                 .build();
     }
@@ -291,6 +293,53 @@ public class OpenApiConfig implements WebMvcConfigurer {
                         "A X-Idempotency-Key já foi usada com outro corpo ou outra rota"));
             });
         };
+    }
+
+    /**
+     * Documenta o rate limit: resposta 429 (com Retry-After e X-RateLimit-*) e os headers X-RateLimit-*
+     * nas respostas de sucesso. Também documenta o header Idempotent-Replayed no 201 dos POST.
+     */
+    private OpenApiCustomizer limiteRequisicoesCustomizer() {
+        return openApi -> {
+            if (openApi.getPaths() == null) {
+                return;
+            }
+            openApi.getPaths().forEach((caminho, pathItem) -> {
+                boolean recurso = ehRecurso(caminho);
+                if (!recurso && !caminho.startsWith("/api-keys")) {
+                    return;
+                }
+                pathItem.readOperationsMap().forEach((metodo, operacao) -> {
+                    // Respostas de sucesso (2xx): mostram o saldo do limite do cliente
+                    operacao.getResponses().forEach((codigo, resposta) -> {
+                        if (codigo.startsWith("2")) {
+                            adicionarHeadersDeLimite(resposta);
+                            if (recurso && metodo == PathItem.HttpMethod.POST && codigo.equals("201")) {
+                                resposta.addHeaderObject("Idempotent-Replayed", cabecalho(
+                                        "`true` quando é a repetição de um POST com a mesma X-Idempotency-Key "
+                                                + "(resposta guardada, nada foi criado de novo)", "true"));
+                            }
+                        }
+                    });
+                    // 429: limite excedido
+                    ApiResponse limite = respostaErro("Limite de requisições por minuto excedido (por IP)");
+                    adicionarHeadersDeLimite(limite);
+                    limite.addHeaderObject("Retry-After", cabecalho(
+                            "Segundos até poder tentar de novo", "42"));
+                    operacao.getResponses().addApiResponse("429", limite);
+                });
+            });
+        };
+    }
+
+    private static void adicionarHeadersDeLimite(ApiResponse resposta) {
+        resposta.addHeaderObject("X-RateLimit-Limit", cabecalho("Máximo de requisições por minuto", "60"));
+        resposta.addHeaderObject("X-RateLimit-Remaining", cabecalho("Requisições restantes na janela atual", "59"));
+        resposta.addHeaderObject("X-RateLimit-Reset", cabecalho("Segundos até a janela zerar", "60"));
+    }
+
+    private static Header cabecalho(String descricao, String exemplo) {
+        return new Header().description(descricao).schema(new StringSchema().example(exemplo));
     }
 
     private static boolean ehRecurso(String caminho) {

@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "b19b749c-f4a2-49a0-a59b-8866b6de29de",
-    "name": "API Campeonato de Futebol - Parte 1",
-    "description": "Execute as pastas NA ORDEM (1 a 5, depois a limpeza). Os ids criados são guardados em variáveis da coleção automaticamente.",
+    "name": "API Campeonato de Futebol - Partes 1 e 2",
+    "description": "Pastas 1 a 6: Parte 1 (executar na ordem). Pasta 7: Parte 2 (chave de API, idempotencia, versoes).\n\nANTES DE USAR: preencha a variavel apiKey (sua chave inicial) e, se for testar a publicacao, troque baseUrl pelo endereco do Render. A variavel apiVersion (1 ou 2) e enviada em X-API-Version; o padrao da API e 2. A colecao inteira passa de 60 requisicoes por minuto (limite da v2): rode a pasta 7 separada, um minuto depois.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -1608,6 +1608,645 @@
           ]
         }
       ]
+    },
+    {
+      "name": "7 - Parte 2 (versao 2: chave, idempotencia, versoes)",
+      "description": "Exige a variavel apiKey preenchida e apiVersion = 2. Rode esta pasta separada das demais (a colecao inteira passa de 60 requisicoes por minuto e o rate limit responderia 429).",
+      "item": [
+        {
+          "name": "GET /times - headers de rate limit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/times",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "times"
+              ]
+            },
+            "description": "Toda resposta traz X-RateLimit-Limit, -Remaining e -Reset. Esperado: 200."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Headers de rate limit', () => {",
+                  "  pm.expect(pm.response.headers.has('X-RateLimit-Limit')).to.be.true;",
+                  "  pm.expect(pm.response.headers.has('X-RateLimit-Remaining')).to.be.true;",
+                  "  pm.expect(pm.response.headers.has('X-RateLimit-Reset')).to.be.true;",
+                  "});",
+                  "pm.test('Versao devolvida = 2', () => pm.expect(pm.response.headers.get('X-API-Version')).to.eql('2'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /estadios SEM chave -> 401",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadios"
+              ]
+            },
+            "description": "Na v2, escrever sem X-API-Key e bloqueado. Esperado: 401.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Estadio Parte 2\",\n  \"capacidade\": 50000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /api-keys (criar chave)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys"
+              ]
+            },
+            "description": "Cria uma chave nova. A chave completa so aparece AGORA. Esperado: 201.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json();",
+                  "pm.collectionVariables.set('novaApiKey', j.chave);",
+                  "pm.collectionVariables.set('novaApiKeyId', j.id);",
+                  "pm.test('Chave comeca com fut_', () => pm.expect(j.chave).to.match(/^fut_/));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /api-keys (sem hash)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys"
+              ]
+            },
+            "description": "Lista as chaves sem mostrar hash nem a chave completa. Esperado: 200."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Nao expoe hash nem chave', () => {",
+                  "  pm.expect(pm.response.text()).to.not.include('\"hash\"');",
+                  "  pm.expect(pm.response.text()).to.not.include(pm.collectionVariables.get('novaApiKey'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /estadios com a chave NOVA -> 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadios"
+              ]
+            },
+            "description": "A chave criada acima tem as mesmas permissoes. Esperado: 201.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Estadio Parte 2\",\n  \"capacidade\": 50000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "X-API-Key",
+                  "type": "string"
+                },
+                {
+                  "key": "value",
+                  "value": "{{novaApiKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "in",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('estadioChaveNova', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /api-keys/{id} (revogar)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api-keys/{{novaApiKeyId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api-keys",
+                "{{novaApiKeyId}}"
+              ]
+            },
+            "description": "Revoga a chave nova (ativa = false). Esperado: 204."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /estadios com chave REVOGADA -> 401",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadios"
+              ]
+            },
+            "description": "Chave revogada deixa de funcionar na hora. Esperado: 401.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Estadio Parte 2\",\n  \"capacidade\": 50000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "X-API-Key",
+                  "type": "string"
+                },
+                {
+                  "key": "value",
+                  "value": "{{novaApiKey}}",
+                  "type": "string"
+                },
+                {
+                  "key": "in",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /estadios (1a vez, com X-Idempotency-Key)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Idempotency-Key",
+                "value": "{{idempotencyKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadios"
+              ]
+            },
+            "description": "Cria o estadio e guarda a resposta. Gera uma chave de idempotencia nova. Esperado: 201.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Estadio Parte 2\",\n  \"capacidade\": 50000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('idempotencyKey', pm.variables.replaceIn('{{$guid}}'));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Nao e repeticao', () => pm.expect(pm.response.headers.has('Idempotent-Replayed')).to.be.false);",
+                  "pm.collectionVariables.set('estadioIdempotente', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /estadios (mesma chave e corpo) -> repeticao",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Idempotency-Key",
+                "value": "{{idempotencyKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadios"
+              ]
+            },
+            "description": "Devolve a resposta guardada, sem criar de novo. Esperado: 201 + Idempotent-Replayed: true e o MESMO id.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Estadio Parte 2\",\n  \"capacidade\": 50000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Idempotent-Replayed: true', () => pm.expect(pm.response.headers.get('Idempotent-Replayed')).to.eql('true'));",
+                  "pm.test('Mesmo id', () => pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get('estadioIdempotente'))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /estadios (mesma chave, corpo diferente) -> 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Idempotency-Key",
+                "value": "{{idempotencyKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadios"
+              ]
+            },
+            "description": "A chave identifica UMA operacao; reutiliza-la com outro corpo e erro. Esperado: 422.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Estadio Parte 2\",\n  \"capacidade\": 99999\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /estadios com X-API-Version: 1 e SEM chave -> 201",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Version",
+                "value": "1"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/estadios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadios"
+              ]
+            },
+            "description": "A v1 e a API original: sem chave de API. Esperado: 201 e X-API-Version: 1.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Estadio Parte 2\",\n  \"capacidade\": 50000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Versao devolvida = 1', () => pm.expect(pm.response.headers.get('X-API-Version')).to.eql('1'));",
+                  "pm.collectionVariables.set('estadioV1', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /times com X-API-Version: 3 -> 400",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Version",
+                "value": "3"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/times",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "times"
+              ]
+            },
+            "description": "Versao invalida (so 1 ou 2). Esperado: 400."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Limpeza: DELETE estadio (chave nova)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/estadios/{{estadioChaveNova}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadios",
+                "{{estadioChaveNova}}"
+              ]
+            },
+            "description": "Remove o estadio criado com a chave nova. Esperado: 204."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Limpeza: DELETE estadio (idempotente)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/estadios/{{estadioIdempotente}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadios",
+                "{{estadioIdempotente}}"
+              ]
+            },
+            "description": "Remove o estadio do teste de idempotencia. Esperado: 204."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Limpeza: DELETE estadio (v1)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/estadios/{{estadioV1}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estadios",
+                "{{estadioV1}}"
+              ]
+            },
+            "description": "Remove o estadio criado na v1. Esperado: 204."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ],
   "variable": [
@@ -1638,6 +2277,73 @@
     {
       "key": "partidaId",
       "value": ""
+    },
+    {
+      "key": "apiKey",
+      "value": ""
+    },
+    {
+      "key": "apiVersion",
+      "value": "2"
+    },
+    {
+      "key": "idempotencyKey",
+      "value": ""
+    },
+    {
+      "key": "novaApiKey",
+      "value": ""
+    },
+    {
+      "key": "novaApiKeyId",
+      "value": ""
+    },
+    {
+      "key": "estadioChaveNova",
+      "value": ""
+    },
+    {
+      "key": "estadioIdempotente",
+      "value": ""
+    },
+    {
+      "key": "estadioV1",
+      "value": ""
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-API-Key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Envia a versao escolhida na variavel apiVersion (1 ou 2). Se a requisicao ja define X-API-Version, respeita.",
+          "const v = pm.collectionVariables.get('apiVersion');",
+          "if (v && !pm.request.headers.has('X-API-Version')) {",
+          "  pm.request.headers.add({ key: 'X-API-Version', value: v });",
+          "}"
+        ]
+      }
     }
   ]
 }
